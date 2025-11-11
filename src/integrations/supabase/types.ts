@@ -277,42 +277,7 @@ export type Database = {
       }
     }
     Views: {
-      proposta_stats_by_month: {
-        Row: {
-          avg_valor: number | null
-          count: number | null
-          empresa_id: string | null
-          month: string | null
-          total_valor: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "propostas_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      proposta_stats_by_status: {
-        Row: {
-          avg_valor: number | null
-          count: number | null
-          empresa_id: string | null
-          status: string | null
-          total_valor: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "propostas_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       get_dashboard_kpis: { Args: { _empresa_id: string }; Returns: Json }
