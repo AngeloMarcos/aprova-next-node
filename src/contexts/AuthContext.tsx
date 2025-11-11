@@ -130,8 +130,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error };
       }
 
-      // Note: Login activity is automatically logged via database triggers
-      // No need to manually insert into activity_logs here
+      // Log login activity using RPC function (bypasses RLS)
+      if (data?.user) {
+        try {
+          await supabase.rpc('log_auth_event', {
+            _user_id: data.user.id,
+            _action: 'login',
+            _user_email: data.user.email,
+          });
+        } catch (logError) {
+          console.error('Failed to log login activity:', logError);
+        }
+      }
 
       toast.success('Login realizado com sucesso!');
       return { error: null };

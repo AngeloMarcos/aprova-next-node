@@ -419,6 +419,15 @@ export type Database = {
         }
         Returns: string
       }
+      log_auth_event: {
+        Args: {
+          _action: string
+          _user_email?: string
+          _user_id: string
+          _user_name?: string
+        }
+        Returns: string
+      }
       user_in_empresa: {
         Args: { _empresa_id: string; _user_id: string }
         Returns: boolean
