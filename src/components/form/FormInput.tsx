@@ -18,6 +18,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
       formState: { errors },
     } = useFormContext();
 
+    const { ref: rhfRef, ...rest } = register(name);
     const error = errors[name];
     const errorMessage = error?.message as string | undefined;
 
@@ -26,8 +27,16 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         {label && <Label htmlFor={name}>{label}</Label>}
         <Input
           id={name}
-          {...register(name)}
+          {...rest}
           {...props}
+          ref={(el) => {
+            rhfRef(el);
+            if (typeof ref === 'function') {
+              ref(el);
+            } else if (ref) {
+              (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
+            }
+          }}
           className={cn(error && "border-destructive", className)}
         />
         {helperText && !error && (

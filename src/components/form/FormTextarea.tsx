@@ -18,6 +18,7 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
       formState: { errors },
     } = useFormContext();
 
+    const { ref: rhfRef, ...rest } = register(name);
     const error = errors[name];
     const errorMessage = error?.message as string | undefined;
 
@@ -26,8 +27,16 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
         {label && <Label htmlFor={name}>{label}</Label>}
         <Textarea
           id={name}
-          {...register(name)}
+          {...rest}
           {...props}
+          ref={(el) => {
+            rhfRef(el);
+            if (typeof ref === 'function') {
+              ref(el);
+            } else if (ref) {
+              (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+            }
+          }}
           className={cn(error && "border-destructive", className)}
         />
         {helperText && !error && (
