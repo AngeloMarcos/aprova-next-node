@@ -1,9 +1,8 @@
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FormInput } from '@/components/form';
 import { Banco, BancoFormData } from '@/hooks/useBancos';
 
 const bancoSchema = yup.object({
@@ -25,11 +24,7 @@ interface BancoFormProps {
 }
 
 export function BancoForm({ banco, onSubmit, onCancel, loading }: BancoFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<BancoFormData>({
+  const methods = useForm<BancoFormData>({
     resolver: yupResolver(bancoSchema) as any,
     defaultValues: {
       nome: banco?.nome || '',
@@ -40,66 +35,44 @@ export function BancoForm({ banco, onSubmit, onCancel, loading }: BancoFormProps
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="nome">Nome do Banco *</Label>
-        <Input
-          id="nome"
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+        <FormInput
+          name="nome"
+          label="Nome do Banco *"
           placeholder="Ex: Banco do Brasil"
-          {...register('nome')}
         />
-        {errors.nome && (
-          <p className="text-sm text-destructive">{errors.nome.message}</p>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="cnpj">CNPJ</Label>
-        <Input
-          id="cnpj"
+        <FormInput
+          name="cnpj"
+          label="CNPJ"
           placeholder="00.000.000/0000-00"
           maxLength={18}
-          {...register('cnpj')}
         />
-        {errors.cnpj && (
-          <p className="text-sm text-destructive">{errors.cnpj.message}</p>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">E-mail</Label>
-        <Input
-          id="email"
+        <FormInput
+          name="email"
+          label="E-mail"
           type="email"
           placeholder="contato@banco.com.br"
-          {...register('email')}
         />
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="telefone">Telefone</Label>
-        <Input
-          id="telefone"
+        <FormInput
+          name="telefone"
+          label="Telefone"
           placeholder="(00) 00000-0000"
           maxLength={15}
-          {...register('telefone')}
         />
-        {errors.telefone && (
-          <p className="text-sm text-destructive">{errors.telefone.message}</p>
-        )}
-      </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Salvando...' : banco ? 'Atualizar' : 'Cadastrar'}
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Salvando...' : banco ? 'Atualizar' : 'Cadastrar'}
+          </Button>
+        </div>
+      </form>
+    </FormProvider>
   );
 }

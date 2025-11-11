@@ -1,21 +1,12 @@
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { FormInput, FormSelect, FormTextarea } from '@/components/form';
 import { Proposta, PropostaFormData } from '@/hooks/usePropostas';
 import { useClientesSelect } from '@/hooks/useClientesSelect';
-import { useBancosSelect } from '@/hooks/useBancosSelect';
 import { useProdutosSelect } from '@/hooks/useProdutosSelect';
+import { useBancosSelect } from '@/hooks/useBancosSelect';
 import { useEffect } from 'react';
 
 const propostaSchema = yup.object({
@@ -48,15 +39,8 @@ interface PropostaFormProps {
 export function PropostaForm({ proposta, onSubmit, onCancel, loading }: PropostaFormProps) {
   const { clientes } = useClientesSelect();
   const { bancos } = useBancosSelect();
-  const { produtos, fetchProdutos } = useProdutosSelect();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<PropostaFormData>({
+  
+  const methods = useForm<PropostaFormData>({
     resolver: yupResolver(propostaSchema) as any,
     defaultValues: {
       cliente_id: proposta?.cliente_id || '',
@@ -69,163 +53,88 @@ export function PropostaForm({ proposta, onSubmit, onCancel, loading }: Proposta
     },
   });
 
-  const selectedCliente = watch('cliente_id');
-  const selectedBanco = watch('banco_id');
-  const selectedProduto = watch('produto_id');
-  const selectedStatus = watch('status');
+  const selectedBancoId = methods.watch('banco_id');
+  const { produtos } = useProdutosSelect(selectedBancoId);
 
   useEffect(() => {
-    if (selectedBanco) {
-      fetchProdutos(selectedBanco);
-      // Reset produto if banco changes
-      if (!proposta) {
-        setValue('produto_id', '');
+    if (selectedBancoId && methods.watch('produto_id')) {
+      const produtoExists = produtos.find(p => p.value === methods.watch('produto_id'));
+      if (!produtoExists) {
+        methods.setValue('produto_id', '');
       }
     }
-  }, [selectedBanco, fetchProdutos]);
-
-  useEffect(() => {
-    if (proposta) {
-      setValue('cliente_id', proposta.cliente_id || '');
-      setValue('banco_id', proposta.banco_id || '');
-      setValue('produto_id', proposta.produto_id || '');
-      setValue('status', proposta.status);
-    }
-  }, [proposta, setValue]);
+  }, [selectedBancoId, produtos, methods]);
 
   const statusOptions = [
-    { value: 'rascunho', label: 'Rascunho', color: 'secondary' },
-    { value: 'em_analise', label: 'Em Análise', color: 'default' },
-    { value: 'aprovada', label: 'Aprovada', color: 'success' },
-    { value: 'reprovada', label: 'Reprovada', color: 'destructive' },
-    { value: 'cancelada', label: 'Cancelada', color: 'outline' },
+    { value: 'rascunho', label: 'Rascunho' },
+    { value: 'em_analise', label: 'Em Análise' },
+    { value: 'aprovada', label: 'Aprovada' },
+    { value: 'reprovada', label: 'Reprovada' },
+    { value: 'finalizada', label: 'Finalizada' },
   ];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="cliente_id">Cliente *</Label>
-        <Select value={selectedCliente} onValueChange={(value) => setValue('cliente_id', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione um cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            {clientes.map((cliente) => (
-              <SelectItem key={cliente.id} value={cliente.id}>
-                {cliente.nome} {cliente.cpf && `- ${cliente.cpf}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.cliente_id && (
-          <p className="text-sm text-destructive">{errors.cliente_id.message}</p>
-        )}
-      </div>
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+        <FormSelect
+          name="cliente_id"
+          label="Cliente *"
+          placeholder="Selecione um cliente"
+          options={clientes}
+        />
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="banco_id">Banco</Label>
-          <Select value={selectedBanco} onValueChange={(value) => setValue('banco_id', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um banco" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
-              {bancos.map((banco) => (
-                <SelectItem key={banco.id} value={banco.id}>
-                  {banco.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <FormSelect
+          name="banco_id"
+          label="Banco *"
+          placeholder="Selecione um banco"
+          options={bancos}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="produto_id">Produto</Label>
-          <Select
-            value={selectedProduto}
-            onValueChange={(value) => setValue('produto_id', value)}
-            disabled={!selectedBanco}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um produto" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
-              {produtos.map((produto) => (
-                <SelectItem key={produto.id} value={produto.id}>
-                  {produto.nome} {produto.tipo_credito && `- ${produto.tipo_credito}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        <FormSelect
+          name="produto_id"
+          label="Produto"
+          placeholder={selectedBancoId ? "Selecione um produto" : "Selecione primeiro um banco"}
+          options={produtos}
+          disabled={!selectedBancoId}
+        />
 
-      <div className="space-y-2">
-        <Label htmlFor="valor">Valor *</Label>
-        <Input
-          id="valor"
+        <FormInput
+          name="valor"
+          label="Valor *"
           type="number"
           step="0.01"
-          placeholder="0.00"
-          {...register('valor')}
+          placeholder="Ex: 50000.00"
         />
-        {errors.valor && <p className="text-sm text-destructive">{errors.valor.message}</p>}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="finalidade">Finalidade</Label>
-        <Input
-          id="finalidade"
+        <FormInput
+          name="finalidade"
+          label="Finalidade"
           placeholder="Ex: Compra de veículo"
-          maxLength={200}
-          {...register('finalidade')}
         />
-        {errors.finalidade && (
-          <p className="text-sm text-destructive">{errors.finalidade.message}</p>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="observacoes">Observações</Label>
-        <Textarea
-          id="observacoes"
-          rows={3}
-          placeholder="Informações adicionais sobre a proposta..."
-          maxLength={500}
-          {...register('observacoes')}
+        <FormTextarea
+          name="observacoes"
+          label="Observações"
+          placeholder="Informações adicionais sobre a proposta"
+          rows={4}
         />
-        {errors.observacoes && (
-          <p className="text-sm text-destructive">{errors.observacoes.message}</p>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Status *</Label>
-        <Select value={selectedStatus} onValueChange={(value) => setValue('status', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o status" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
-      </div>
+        <FormSelect
+          name="status"
+          label="Status *"
+          placeholder="Selecione o status"
+          options={statusOptions}
+        />
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Salvando...' : proposta ? 'Atualizar' : 'Cadastrar'}
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Salvando...' : proposta ? 'Atualizar' : 'Cadastrar'}
+          </Button>
+        </div>
+      </form>
+    </FormProvider>
   );
 }
