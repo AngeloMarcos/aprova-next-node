@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -128,6 +128,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         toast.error(error.message);
         return { error };
+      }
+
+      // Log login activity
+      if (data?.user) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('nome, empresa_id')
+            .eq('id', data.user.id)
+            .single();
+
+          await supabase.from('activity_logs').insert({
+            user_id: data.user.id,
+            user_email: data.user.email,
+            user_name: profileData?.nome,
+            action: 'login',
+            entity_type: 'user',
+            entity_id: data.user.id,
+            entity_name: profileData?.nome,
+            details: { action: 'login' },
+            empresa_id: profileData?.empresa_id,
+          });
+        } catch (logError) {
+          console.error('Failed to log login activity:', logError);
+        }
       }
 
       toast.success('Login realizado com sucesso!');

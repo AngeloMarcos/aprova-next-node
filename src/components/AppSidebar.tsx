@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FileText, LogOut, Building2, Package, UserCog } from "lucide-react";
+import { LayoutDashboard, Users, FileText, LogOut, Building2, Package, UserCog, Activity } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -22,6 +22,7 @@ const menuItems = [
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Propostas", url: "/propostas", icon: FileText },
   { title: "Usuários", url: "/users", icon: UserCog, adminOnly: true },
+  { title: "Log de Atividades", url: "/activity-log", icon: Activity, managerAccess: true },
 ];
 
 const financialItems = [
@@ -33,7 +34,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, isAdmin } = useAuth();
+  const { signOut, isAdmin, isGerente } = useAuth();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
@@ -63,6 +64,10 @@ export function AppSidebar() {
               {menuItems.map((item) => {
                 // Hide admin-only items for non-admin users
                 if (item.adminOnly && !isAdmin) {
+                  return null;
+                }
+                // Hide manager-access items for agents
+                if (item.managerAccess && !isAdmin && !isGerente) {
                   return null;
                 }
                 

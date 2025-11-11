@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          empresa_id: string | null
+          entity_id: string | null
+          entity_name: string | null
+          entity_type: string
+          id: string
+          new_value: Json | null
+          previous_value: Json | null
+          timestamp: string
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          empresa_id?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type: string
+          id?: string
+          new_value?: Json | null
+          previous_value?: Json | null
+          timestamp?: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          empresa_id?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          new_value?: Json | null
+          previous_value?: Json | null
+          timestamp?: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bancos: {
         Row: {
           cnpj: string | null
@@ -338,6 +397,19 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_activity: {
+        Args: {
+          _action: string
+          _details?: Json
+          _entity_id: string
+          _entity_name: string
+          _entity_type: string
+          _new_value?: Json
+          _previous_value?: Json
+          _user_id: string
+        }
+        Returns: string
       }
       user_in_empresa: {
         Args: { _empresa_id: string; _user_id: string }
