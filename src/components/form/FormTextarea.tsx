@@ -28,7 +28,6 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
           id={name}
           {...register(name)}
           {...props}
-          ref={ref}
           className={cn(error && "border-destructive", className)}
         />
         {helperText && !error && (

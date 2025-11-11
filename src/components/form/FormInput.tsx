@@ -28,7 +28,6 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           id={name}
           {...register(name)}
           {...props}
-          ref={ref}
           className={cn(error && "border-destructive", className)}
         />
         {helperText && !error && (
