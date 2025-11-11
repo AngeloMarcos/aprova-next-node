@@ -173,8 +173,8 @@ export default function Produtos() {
               <SelectContent>
                 <SelectItem value="">Todos os bancos</SelectItem>
                 {bancos.map((banco) => (
-                  <SelectItem key={banco.id} value={banco.id}>
-                    {banco.nome}
+                  <SelectItem key={banco.value} value={banco.value}>
+                    {banco.label}
                   </SelectItem>
                 ))}
               </SelectContent>

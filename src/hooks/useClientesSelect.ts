@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-export interface ClienteOption {
-  id: string;
-  nome: string;
-  cpf: string | null;
-}
+import { SelectOption } from '@/components/form/FormSelect';
 
 export function useClientesSelect() {
-  const [clientes, setClientes] = useState<ClienteOption[]>([]);
+  const [clientes, setClientes] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchClientes = async () => {
@@ -22,7 +17,14 @@ export function useClientesSelect() {
 
       if (error) throw error;
 
-      setClientes(data as ClienteOption[]);
+      const mappedClientes = (data || [])
+        .filter(cliente => cliente.id && cliente.nome)
+        .map(cliente => ({
+          value: cliente.id,
+          label: cliente.cpf ? `${cliente.nome} - ${cliente.cpf}` : cliente.nome,
+        }));
+
+      setClientes(mappedClientes);
     } catch (error: any) {
       toast.error('Erro ao carregar clientes: ' + error.message);
     } finally {

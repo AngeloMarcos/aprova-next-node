@@ -57,13 +57,13 @@ export function PropostaForm({ proposta, onSubmit, onCancel, loading }: Proposta
   const { produtos } = useProdutosSelect(selectedBancoId);
 
   useEffect(() => {
-    if (selectedBancoId && methods.watch('produto_id')) {
-      const produtoExists = produtos.find(p => p.value === methods.watch('produto_id'));
+    if (selectedBancoId && methods.getValues('produto_id')) {
+      const produtoExists = produtos.find(p => p.value === methods.getValues('produto_id'));
       if (!produtoExists) {
         methods.setValue('produto_id', '');
       }
     }
-  }, [selectedBancoId, produtos, methods]);
+  }, [selectedBancoId, produtos]);
 
   const statusOptions = [
     { value: 'rascunho', label: 'Rascunho' },

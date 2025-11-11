@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-export interface BancoOption {
-  id: string;
-  nome: string;
-}
+import { SelectOption } from '@/components/form/FormSelect';
 
 export function useBancosSelect() {
-  const [bancos, setBancos] = useState<BancoOption[]>([]);
+  const [bancos, setBancos] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchBancos = async () => {
@@ -21,7 +17,14 @@ export function useBancosSelect() {
 
       if (error) throw error;
 
-      setBancos(data as BancoOption[]);
+      const mappedBancos = (data || [])
+        .filter(banco => banco.id && banco.nome)
+        .map(banco => ({
+          value: banco.id,
+          label: banco.nome,
+        }));
+
+      setBancos(mappedBancos);
     } catch (error: any) {
       toast.error('Erro ao carregar bancos: ' + error.message);
     } finally {

@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SelectOption } from '@/components/form/FormSelect';
 
-export interface ProdutoOption {
-  id: string;
-  nome: string;
-  tipo_credito: string | null;
-  banco_id: string | null;
-}
-
-export function useProdutosSelect() {
-  const [produtos, setProdutos] = useState<ProdutoOption[]>([]);
+export function useProdutosSelect(bancoId?: string) {
+  const [produtos, setProdutos] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchProdutos = async (bancoId?: string) => {
+  const fetchProdutos = async () => {
     setLoading(true);
     try {
       let query = supabase
@@ -30,7 +24,14 @@ export function useProdutosSelect() {
 
       if (error) throw error;
 
-      setProdutos(data as ProdutoOption[]);
+      const mappedProdutos = (data || [])
+        .filter(produto => produto.id && produto.nome)
+        .map(produto => ({
+          value: produto.id,
+          label: produto.tipo_credito ? `${produto.nome} - ${produto.tipo_credito}` : produto.nome,
+        }));
+
+      setProdutos(mappedProdutos);
     } catch (error: any) {
       toast.error('Erro ao carregar produtos: ' + error.message);
     } finally {
@@ -40,7 +41,7 @@ export function useProdutosSelect() {
 
   useEffect(() => {
     fetchProdutos();
-  }, []);
+  }, [bancoId]);
 
-  return { produtos, loading, fetchProdutos };
+  return { produtos, loading };
 }
