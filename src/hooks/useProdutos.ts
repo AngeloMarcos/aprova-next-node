@@ -80,7 +80,23 @@ export function useProdutos() {
   const createProduto = async (formData: ProdutoFormData) => {
     setLoading(true);
     try {
-      const { error } = await supabase.from('produtos').insert([formData]);
+      // Get current user's empresa_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.empresa_id) {
+        throw new Error('Empresa não encontrada');
+      }
+
+      const { error } = await supabase.from('produtos').insert([
+        { ...formData, empresa_id: profile.empresa_id }
+      ]);
 
       if (error) throw error;
 
