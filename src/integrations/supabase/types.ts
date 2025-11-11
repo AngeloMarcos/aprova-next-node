@@ -14,7 +14,257 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bancos: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          email: string | null
+          empresa_id: string | null
+          id: string
+          nome: string | null
+          telefone: string | null
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bancos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clientes: {
+        Row: {
+          cpf: string | null
+          created_at: string | null
+          email: string | null
+          empresa_id: string | null
+          id: string
+          nome: string | null
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clientes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empresas: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      produtos: {
+        Row: {
+          banco_id: string | null
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nome: string | null
+          status: string | null
+          taxa_juros: number | null
+          tipo_credito: string | null
+        }
+        Insert: {
+          banco_id?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          status?: string | null
+          taxa_juros?: number | null
+          tipo_credito?: string | null
+        }
+        Update: {
+          banco_id?: string | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          status?: string | null
+          taxa_juros?: number | null
+          tipo_credito?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_banco_id_fkey"
+            columns: ["banco_id"]
+            isOneToOne: false
+            referencedRelation: "bancos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas: {
+        Row: {
+          banco_id: string | null
+          cliente_id: string | null
+          data: string | null
+          empresa_id: string | null
+          finalidade: string | null
+          id: string
+          observacoes: string | null
+          produto_id: string | null
+          status: string | null
+          valor: number | null
+        }
+        Insert: {
+          banco_id?: string | null
+          cliente_id?: string | null
+          data?: string | null
+          empresa_id?: string | null
+          finalidade?: string | null
+          id?: string
+          observacoes?: string | null
+          produto_id?: string | null
+          status?: string | null
+          valor?: number | null
+        }
+        Update: {
+          banco_id?: string | null
+          cliente_id?: string | null
+          data?: string | null
+          empresa_id?: string | null
+          finalidade?: string | null
+          id?: string
+          observacoes?: string | null
+          produto_id?: string | null
+          status?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_banco_id_fkey"
+            columns: ["banco_id"]
+            isOneToOne: false
+            referencedRelation: "bancos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuarios: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          email: string
+          empresa_id: string | null
+          id: string
+          nome: string | null
+          role: string | null
+          senha: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          email: string
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          role?: string | null
+          senha?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          email?: string
+          empresa_id?: string | null
+          id?: string
+          nome?: string | null
+          role?: string | null
+          senha?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
