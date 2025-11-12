@@ -93,7 +93,7 @@ export function UserForm({ user, onSubmit, onCancel, loading }: UserFormProps) {
             Cancelar
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : user ? 'Atualizar' : 'Convidar'}
+            {loading ? 'Salvando...' : user ? 'Atualizar' : 'Cadastrar'}
           </Button>
         </div>
       </form>

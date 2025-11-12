@@ -123,42 +123,26 @@ export function useUsers() {
         throw new Error('Empresa não encontrada');
       }
 
-      // Create user in auth with a temporary password
-      const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
-      
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: tempPassword,
-        options: {
-          data: {
-            nome: formData.nome,
-            empresa_id: profile.empresa_id,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
+      // Call edge function to create user without email confirmation
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: formData.email,
+          nome: formData.nome,
+          role: formData.role,
+          empresa_id: profile.empresa_id,
         },
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      if (!authData.user) {
-        throw new Error('Erro ao criar usuário');
-      }
-
-      // Update role if not default
-      if (formData.role !== 'agente') {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .update({ role: formData.role })
-          .eq('user_id', authData.user.id);
-
-        if (roleError) throw roleError;
-      }
-
-      toast.success('Usuário convidado com sucesso! Um e-mail foi enviado.');
+      toast.success('Usuário criado com sucesso! Um e-mail foi enviado para definir a senha.');
       return true;
     } catch (error: any) {
-      if (error.message.includes('User already registered')) {
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
         toast.error('Este e-mail já está cadastrado no sistema');
+      } else if (error.message.includes('Forbidden')) {
+        toast.error('Você não tem permissão para criar usuários');
       } else {
         toast.error('Erro ao criar usuário: ' + error.message);
       }
