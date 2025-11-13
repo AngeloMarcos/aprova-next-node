@@ -347,6 +347,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      configure_test_user_as_admin: { Args: never; Returns: undefined }
       create_initial_admin_user: { Args: never; Returns: undefined }
       get_dashboard_kpis: { Args: { _empresa_id: string }; Returns: Json }
       get_default_empresa_for_signup: { Args: never; Returns: string }
