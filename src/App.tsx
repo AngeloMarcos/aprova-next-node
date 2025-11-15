@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
@@ -20,29 +19,27 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/propostas" element={<Propostas />} />
-              <Route path="/propostas/:id" element={<PropostaDetail />} />
-              <Route path="/bancos" element={<Bancos />} />
-              <Route path="/produtos" element={<Produtos />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/activity-log" element={<ActivityLog />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/clientes" element={<Clientes />} />
+            <Route path="/propostas" element={<Propostas />} />
+            <Route path="/propostas/:id" element={<PropostaDetail />} />
+            <Route path="/bancos" element={<Bancos />} />
+            <Route path="/produtos" element={<Produtos />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/activity-log" element={<ActivityLog />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

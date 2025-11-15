@@ -13,11 +13,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
-        serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],
-        mono: ['monospace'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
