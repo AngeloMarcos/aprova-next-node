@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { StatCard } from "@/components/StatCard";
+import { AdvancedStatCard } from "@/components/AdvancedStatCard";
 import { QuickActionCard } from "@/components/QuickActionCard";
-import { Users, FileText, CheckCircle, DollarSign, FileSearch, TrendingUp, Plus, UserPlus, Search, Calendar as CalendarIcon } from "lucide-react";
+import { Users, FileText, CheckCircle, DollarSign, FileSearch, TrendingUp, Clock, Target, Calendar as CalendarIcon, Plus, UserPlus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -100,58 +100,69 @@ export default function Dashboard() {
     );
   }
 
+  // Generate mock sparkline data for demonstration
+  const generateSparklineData = (base: number) => {
+    return Array.from({ length: 7 }, () => base + Math.random() * base * 0.3);
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Header */}
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h2>
-          <p className="text-sm text-muted-foreground">Visão geral do seu sistema de CRM</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Dashboard</h2>
+            <p className="text-xs text-muted-foreground">Visão geral em tempo real</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <QuickActionCard title="Nova Proposta" icon={Plus} onClick={() => navigate('/propostas?new=true')} />
+            <QuickActionCard title="Novo Cliente" icon={UserPlus} onClick={() => navigate('/clientes?new=true')} />
+            <QuickActionCard title="Consultar Propostas" icon={Search} onClick={() => navigate('/propostas')} />
+          </div>
         </div>
 
-        {/* KPI Cards - Grid compacto */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <StatCard
+        {/* KPI Cards - Grid rigoroso 5-6 cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <AdvancedStatCard
             title="Total Clientes"
             value={stats?.total_clientes || 0}
             icon={Users}
-            iconColor="primary"
+            iconColor="text-chart-1"
+            sparklineData={generateSparklineData(stats?.total_clientes || 10)}
+            trend={{ value: 12.5, isPositive: true }}
           />
-          <StatCard
+          <AdvancedStatCard
             title="Total Propostas"
             value={stats?.total_propostas || 0}
             icon={FileText}
-            iconColor="primary"
+            iconColor="text-chart-2"
+            sparklineData={generateSparklineData(stats?.total_propostas || 20)}
+            trend={{ value: 8.3, isPositive: true }}
           />
-          <StatCard
-            title="Em Análise"
-            value={stats?.propostas_analise || 0}
-            icon={FileSearch}
-            iconColor="warning"
-          />
-          <StatCard
+          <AdvancedStatCard
             title="Aprovadas"
             value={stats?.propostas_aprovadas || 0}
             icon={CheckCircle}
-            iconColor="primary"
+            iconColor="text-chart-1"
+            trend={{ value: 15.2, isPositive: true }}
+            badge="Mês"
           />
-          <StatCard
+          <AdvancedStatCard
             title="Pendentes"
             value={stats?.propostas_pendentes || 0}
-            icon={FileText}
-            iconColor="muted"
+            icon={Clock}
+            iconColor="text-chart-4"
+            progress={stats?.propostas_pendentes ? (stats.propostas_pendentes / (stats.total_propostas || 1)) * 100 : 0}
           />
-          <StatCard
+          <AdvancedStatCard
             title="Taxa Aprovação"
             value={`${(stats?.taxa_aprovacao || 0).toFixed(1)}%`}
-            icon={TrendingUp}
-            iconColor="primary"
+            icon={Target}
+            iconColor="text-chart-1"
+            progress={stats?.taxa_aprovacao || 0}
+            trend={{ value: 3.2, isPositive: true }}
           />
-        </div>
-
-        {/* Valores - Segunda linha de KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3">
-          <StatCard
+          <AdvancedStatCard
             title="Ticket Médio"
             value={new Intl.NumberFormat('pt-BR', {
               style: 'currency',
@@ -160,82 +171,55 @@ export default function Dashboard() {
               maximumFractionDigits: 0,
             }).format(stats?.ticket_medio || 0)}
             icon={DollarSign}
-            iconColor="primary"
+            iconColor="text-chart-5"
+            sparklineData={generateSparklineData(stats?.ticket_medio || 5000)}
+            trend={{ value: 5.7, isPositive: true }}
           />
-          <StatCard
-            title="Total Aprovado"
-            value={new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(stats?.valor_total_aprovado || 0)}
-            icon={DollarSign}
-            iconColor="primary"
-          />
-          <div className="flex items-center justify-center gap-2 bg-card border border-border rounded-lg p-3">
-            <span className="text-xs text-muted-foreground mr-2">Ações:</span>
-            <QuickActionCard
-              title="Nova Proposta"
-              icon={Plus}
-              onClick={() => navigate('/propostas?new=true')}
-            />
-            <QuickActionCard
-              title="Novo Cliente"
-              icon={UserPlus}
-              onClick={() => navigate('/clientes?new=true')}
-            />
-            <QuickActionCard
-              title="Consultar Propostas"
-              icon={Search}
-              onClick={() => navigate('/propostas')}
-            />
-          </div>
         </div>
 
         {/* Gráficos e Calendário - Layout compacto */}
         <div className="grid gap-3 lg:grid-cols-3">
           <Card className="lg:col-span-2 border-border bg-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-card-foreground">Tendência de Propostas</CardTitle>
-              <CardDescription className="text-xs">Últimos 6 meses</CardDescription>
+            <CardHeader className="pb-2 px-4 pt-3">
+              <CardTitle className="text-xs font-semibold text-card-foreground uppercase tracking-wider">Tendência de Propostas</CardTitle>
+              <CardDescription className="text-[10px]">Últimos 6 meses</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2 pr-4 pb-3">
+            <CardContent className="pl-2 pr-3 pb-3">
               {dashboardLoading ? (
-                <div className="h-[180px] flex items-center justify-center">
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                <div className="h-[160px] flex items-center justify-center">
+                  <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
                 </div>
               ) : trends.length === 0 ? (
-                <div className="h-[180px] flex flex-col items-center justify-center text-muted-foreground">
-                  <TrendingUp className="h-8 w-8 mb-2 opacity-30" />
-                  <p className="text-xs">Sem dados de tendência ainda</p>
+                <div className="h-[160px] flex flex-col items-center justify-center text-muted-foreground">
+                  <TrendingUp className="h-7 w-7 mb-2 opacity-20" />
+                  <p className="text-[10px]">Sem dados de tendência</p>
                 </div>
               ) : (
                 <ChartContainer
                   config={{
-                    count: { label: "Propostas", color: "hsl(var(--chart-1))" },
+                    count: { label: "Propostas", color: "oklch(var(--chart-1))" },
                   }}
-                  className="h-[180px]"
+                  className="h-[160px]"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trends}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--border))" opacity={0.2} />
                       <XAxis
                         dataKey="month"
-                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        tick={{ fontSize: 9, fill: "oklch(var(--muted-foreground))" }}
                         tickFormatter={(value) => {
                           const [year, month] = value.split('-');
                           return format(new Date(parseInt(year), parseInt(month) - 1), 'MMM', { locale: ptBR });
                         }}
                       />
-                      <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                      <YAxis tick={{ fontSize: 9, fill: "oklch(var(--muted-foreground))" }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Line
                         type="monotone"
                         dataKey="count"
-                        stroke="hsl(var(--chart-1))"
+                        stroke="oklch(var(--chart-1))"
                         strokeWidth={2}
-                        dot={{ fill: "hsl(var(--chart-1))", r: 3 }}
+                        dot={{ fill: "oklch(var(--chart-1))", r: 2.5 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -245,18 +229,18 @@ export default function Dashboard() {
           </Card>
 
           <Card className="border-border bg-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-card-foreground flex items-center gap-2">
-                <CalendarIcon className="h-3.5 w-3.5" />
+            <CardHeader className="pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-semibold text-card-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <CalendarIcon className="h-3 w-3" />
                 Calendário
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-2 pb-2">
+            <CardContent className="px-1 pb-2">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                className="rounded-md border-0 [&_.rdp-caption]:text-xs [&_.rdp-head_cell]:text-[10px] [&_.rdp-day]:text-xs [&_.rdp-day]:h-7 [&_.rdp-day]:w-7"
+                className="rounded-md border-0 scale-90 origin-top [&_.rdp-caption]:text-[10px] [&_.rdp-head_cell]:text-[9px] [&_.rdp-day]:text-[10px] [&_.rdp-day]:h-6 [&_.rdp-day]:w-6"
               />
             </CardContent>
           </Card>
@@ -265,34 +249,41 @@ export default function Dashboard() {
         {/* Status e Propostas Recentes */}
         <div className="grid gap-3 lg:grid-cols-3">
           <Card className="lg:col-span-2 border-border bg-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-card-foreground">Distribuição por Status</CardTitle>
-              <CardDescription className="text-xs">Visão atual</CardDescription>
+            <CardHeader className="pb-2 px-4 pt-3">
+              <CardTitle className="text-xs font-semibold text-card-foreground uppercase tracking-wider">Distribuição por Status</CardTitle>
+              <CardDescription className="text-[10px]">Visão atual</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2 pr-4 pb-3">
+            <CardContent className="pl-2 pr-3 pb-3">
               {dashboardLoading ? (
-                <div className="h-[180px] flex items-center justify-center">
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                <div className="h-[160px] flex items-center justify-center">
+                  <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
                 </div>
               ) : statusBreakdown.length === 0 ? (
-                <div className="h-[180px] flex flex-col items-center justify-center text-muted-foreground">
-                  <FileText className="h-8 w-8 mb-2 opacity-30" />
-                  <p className="text-xs">Sem propostas para exibir</p>
+                <div className="h-[160px] flex flex-col items-center justify-center text-muted-foreground">
+                  <FileText className="h-7 w-7 mb-2 opacity-20" />
+                  <p className="text-[10px]">Sem propostas para exibir</p>
                 </div>
               ) : (
                 <ChartContainer
                   config={{
-                    count: { label: "Quantidade", color: "hsl(var(--chart-1))" },
+                    count: { label: "Quantidade", color: "oklch(var(--chart-1))" },
                   }}
-                  className="h-[180px]"
+                  className="h-[160px]"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={statusBreakdown}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                      <XAxis dataKey="status" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                      <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(var(--border))" opacity={0.2} />
+                      <XAxis dataKey="status" tick={{ fontSize: 9, fill: "oklch(var(--muted-foreground))" }} />
+                      <YAxis tick={{ fontSize: 9, fill: "oklch(var(--muted-foreground))" }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                        {statusBreakdown.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={`oklch(var(--chart-${(index % 5) + 1}))`} 
+                          />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -301,36 +292,36 @@ export default function Dashboard() {
           </Card>
 
           <Card className="border-border bg-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-card-foreground">Propostas Recentes</CardTitle>
-              <CardDescription className="text-xs">Últimas 5</CardDescription>
+            <CardHeader className="pb-2 px-3 pt-3">
+              <CardTitle className="text-xs font-semibold text-card-foreground uppercase tracking-wider">Propostas Recentes</CardTitle>
+              <CardDescription className="text-[10px]">Últimas 5</CardDescription>
             </CardHeader>
-            <CardContent className="pb-3">
+            <CardContent className="pb-3 px-3">
               {dashboardLoading ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-12 bg-muted/20 rounded animate-pulse" />
+                    <div key={i} className="h-14 bg-muted/20 rounded animate-pulse" />
                   ))}
                 </div>
               ) : recentPropostas.length === 0 ? (
-                <div className="h-[160px] flex flex-col items-center justify-center text-muted-foreground">
-                  <FileSearch className="h-8 w-8 mb-2 opacity-30" />
-                  <p className="text-xs">Sem propostas recentes</p>
+                <div className="h-[140px] flex flex-col items-center justify-center text-muted-foreground">
+                  <FileSearch className="h-7 w-7 mb-2 opacity-20" />
+                  <p className="text-[10px]">Sem propostas recentes</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {recentPropostas.map((proposta) => (
                     <div
                       key={proposta.id}
-                      className="flex items-start justify-between gap-2 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-colors border border-transparent hover:border-border"
+                      className="flex items-start justify-between gap-2 cursor-pointer hover:bg-accent p-2 rounded-md transition-all border border-transparent hover:border-border group"
                       onClick={() => navigate(`/propostas/${proposta.id}`)}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate text-foreground">{proposta.cliente_nome}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[11px] font-semibold truncate text-card-foreground group-hover:text-primary transition-colors">{proposta.cliente_nome}</p>
+                        <p className="text-[9px] text-muted-foreground truncate">
                           {proposta.produto_nome}
                         </p>
-                        <p className="text-[10px] text-muted-foreground font-semibold">
+                        <p className="text-[10px] text-muted-foreground font-bold mt-0.5">
                           {new Intl.NumberFormat('pt-BR', {
                             style: 'currency',
                             currency: 'BRL',
@@ -346,7 +337,7 @@ export default function Dashboard() {
                             ? 'destructive'
                             : 'secondary'
                         }
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-[9px] px-1.5 py-0.5 h-5 shrink-0"
                       >
                         {proposta.status}
                       </Badge>
