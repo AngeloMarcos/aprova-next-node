@@ -19,7 +19,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // SCHEMAS DE VALIDAÇÃO
 // ============================================================================
 
-// Schema base com tipos corrigidos
 const baseSchema = z.object({
   cliente_id: z.string().min(1, "Cliente é obrigatório"),
   tipo_proposta: z.enum(["credito_pessoal", "consorcio", "cartao_credito"], {
@@ -32,7 +31,6 @@ const baseSchema = z.object({
   observacoes: z.string().optional(),
 });
 
-// Schemas dinâmicos por tipo
 const creditoSchema = z.object({
   tipo_operacao: z.enum(["novo", "refinanciamento", "portabilidade"], {
     required_error: "Tipo de operação é obrigatório",
@@ -72,7 +70,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
   const { clientes, loading: loadingClientes } = useClientesSelect();
   const { bancos, loading: loadingBancos } = useBancosSelect();
 
-  // Estados
   const [produtos, setProdutos] = useState<SelectOption[]>([]);
   const [loadingProdutos, setLoadingProdutos] = useState(false);
   const [promotoras, setPromotoras] = useState<SelectOption[]>([]);
@@ -81,7 +78,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [currentSchema, setCurrentSchema] = useState(baseSchema);
 
-  // Form setup
   const methods = useForm<any>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
@@ -102,7 +98,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
   // EFFECTS
   // ============================================================================
 
-  // Atualizar schema quando tipo_proposta mudar
   useEffect(() => {
     let newSchema = baseSchema;
 
@@ -115,18 +110,16 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
     }
 
     setCurrentSchema(newSchema);
-    setErrorMessage(""); // Limpar erros ao trocar tipo
+    setErrorMessage("");
   }, [tipoProposta]);
 
-  // Carregar produtos quando tipo_proposta mudar
   useEffect(() => {
     if (tipoProposta) {
       loadProdutos(tipoProposta);
-      setValue("produto_id", ""); // Resetar produto quando tipo mudar
+      setValue("produto_id", "");
     }
   }, [tipoProposta, setValue]);
 
-  // Carregar promotoras na inicialização
   useEffect(() => {
     loadPromotoras();
   }, []);
@@ -136,8 +129,8 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
   // ============================================================================
 
   /**
-   * Carregar produtos filtrados por tipo
-   * CORREÇÃO: Adicionado filtro .eq('tipo', tipo)
+   * Carregar produtos ativos
+   * ✅ AJUSTADO: Removido filtro por tipo (compatível com estrutura atual)
    */
   const loadProdutos = async (tipo: string) => {
     setLoadingProdutos(true);
@@ -146,9 +139,8 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
     try {
       const { data, error } = await supabase
         .from("produtos")
-        .select("id, nome, tipo, tipo_credito")
-        .eq("ativo", true)
-        .eq("tipo", tipo) // ✅ FILTRO CORRIGIDO
+        .select("id, nome, tipo_credito")
+        .eq("status", "ativo") // ✅ Mudado de .eq("ativo", true) para .eq("status", "ativo")
         .order("nome", { ascending: true });
 
       if (error) throw error;
@@ -163,7 +155,7 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
       setProdutos(mappedProdutos);
 
       if (mappedProdutos.length === 0) {
-        setErrorMessage(`Nenhum produto ativo encontrado para o tipo selecionado.`);
+        setErrorMessage("Nenhum produto ativo encontrado.");
       }
     } catch (error: any) {
       console.error("Erro ao carregar produtos:", error);
@@ -188,7 +180,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
         .order("nome", { ascending: true });
 
       if (error) {
-        // Silencioso se tabela não existir (opcional)
         console.warn("Tabela promotoras não encontrada ou erro:", error.message);
         return;
       }
@@ -298,7 +289,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
 
       if (historicoError) {
         console.warn("Erro ao criar histórico:", historicoError);
-        // Não bloqueia a criação da proposta
       }
 
       // 6. Criar checklist inicial de documentos
@@ -322,7 +312,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
 
       if (documentosError) {
         console.warn("Erro ao criar checklist de documentos:", documentosError);
-        // Não bloqueia a criação da proposta
       }
 
       // 7. Feedback e redirecionamento
@@ -330,10 +319,8 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
 
       if (onSuccess) onSuccess();
 
-      // Redirecionar após pequeno delay para garantir que toast seja visto
-      setTimeout(() => {
-        navigate(`/propostas/${novaProposta.id}`);
-      }, 500);
+      // ✅ AJUSTADO: Redirecionar imediatamente (removido setTimeout)
+      navigate(`/propostas/${novaProposta.id}`);
     } catch (error: any) {
       console.error("Erro ao criar proposta:", error);
       const errorMsg = error.message || "Erro desconhecido ao criar proposta";
@@ -374,7 +361,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Mensagem de erro global */}
         {errorMessage && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -382,7 +368,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
           </Alert>
         )}
 
-        {/* SEÇÃO 1: DADOS PRINCIPAIS */}
         <Card>
           <CardHeader>
             <CardTitle>Dados Principais</CardTitle>
@@ -417,7 +402,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
           </CardContent>
         </Card>
 
-        {/* SEÇÃO 2: DETALHES DA OPERAÇÃO (DINÂMICO) */}
         <Card>
           <CardHeader>
             <CardTitle>Detalhes da Operação</CardTitle>
@@ -579,7 +563,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
           </CardContent>
         </Card>
 
-        {/* SEÇÃO 3: FINALIZAÇÃO */}
         <Card>
           <CardHeader>
             <CardTitle>Finalização</CardTitle>
@@ -621,7 +604,6 @@ export function PropostaFormDynamic({ onSuccess, onCancel }: PropostaFormDynamic
           </CardContent>
         </Card>
 
-        {/* BOTÕES DE AÇÃO */}
         <div className="flex flex-col sm:flex-row gap-3 justify-end">
           <Button
             type="button"
