@@ -1,36 +1,26 @@
+import { Card } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface QuickActionCardProps {
   title: string;
   icon: LucideIcon;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function QuickActionCard({ title, icon: Icon, onClick }: QuickActionCardProps) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onClick}
-            className="h-8 w-8 rounded-full border-border/50 bg-card hover:bg-accent hover:border-primary/50 transition-all shadow-sm"
-          >
-            <Icon className="h-3.5 w-3.5 text-foreground" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="text-[10px]">
-          <p>{title}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Card 
+      className={cn(
+        "p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200",
+        "hover:border-primary group"
+      )}
+      onClick={onClick}
+    >
+      <Icon className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+      <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200">
+        {title}
+      </span>
+    </Card>
   );
 }
