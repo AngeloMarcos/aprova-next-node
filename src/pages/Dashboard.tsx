@@ -86,13 +86,17 @@ export default function Dashboard() {
     };
   }, []);
 
-  if (isLoading) {
+  if (isLoading || dashboardLoading) {
     return (
       <DashboardLayout>
-        <div className="animate-pulse space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-muted rounded-lg" />
+        <div className="space-y-4">
+          <div>
+            <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-4 w-64 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="h-[110px] min-w-[170px] bg-muted/50 rounded-lg border animate-pulse" />
             ))}
           </div>
         </div>
@@ -110,47 +114,47 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 overflow-x-auto">
+        <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 overflow-x-auto pb-1">
           <StatCard
-            title="Total de Clientes"
+            title="Clientes"
             value={stats?.total_clientes || 0}
             icon={Users}
             iconColor="primary"
-            description="Clientes cadastrados"
+            description="Total cadastrados"
             trend={{ value: 12.5, isPositive: true }}
-            sparklineData={trends.slice(0, 7).map(t => ({ value: t.count }))}
+            sparklineData={trends.slice(0, 7).map(t => ({ value: t.count || 0 }))}
           />
           <StatCard
-            title="Total de Propostas"
+            title="Propostas"
             value={stats?.total_propostas || 0}
             icon={FileText}
             iconColor="primary"
-            description="Propostas cadastradas"
+            description="Total cadastradas"
             trend={{ value: 8.2, isPositive: true }}
-            sparklineData={trends.slice(0, 7).map(t => ({ value: t.count }))}
+            sparklineData={trends.slice(0, 7).map(t => ({ value: t.count || 0 }))}
           />
           <StatCard
-            title="Propostas em Análise"
+            title="Em Análise"
             value={stats?.propostas_analise || 0}
             icon={FileSearch}
             iconColor="warning"
-            description="Aguardando análise"
+            description="Aguardando"
             trend={{ value: -3.1, isPositive: false }}
           />
           <StatCard
-            title="Taxa de Aprovação"
+            title="Aprovação"
             value={`${(stats?.taxa_aprovacao || 0).toFixed(1)}%`}
             icon={TrendingUp}
             iconColor="primary"
-            description="Taxa de aprovação"
+            description="Taxa atual"
             trend={{ value: 5.4, isPositive: true }}
           />
           <StatCard
-            title="Propostas Aprovadas"
+            title="Aprovadas"
             value={stats?.propostas_aprovadas || 0}
             icon={CheckCircle}
             iconColor="primary"
-            description="Aprovadas"
+            description="Finalizadas"
             trend={{ value: 15.8, isPositive: true }}
           />
           <StatCard
@@ -163,11 +167,11 @@ export default function Dashboard() {
             }).format(stats?.ticket_medio || 0)}
             icon={DollarSign}
             iconColor="primary"
-            description="Valor médio aprovado"
+            description="Média aprovado"
             trend={{ value: 7.3, isPositive: true }}
           />
           <StatCard
-            title="Valor Total Aprovado"
+            title="Total"
             value={new Intl.NumberFormat('pt-BR', {
               style: 'currency',
               currency: 'BRL',
@@ -176,21 +180,22 @@ export default function Dashboard() {
             }).format(stats?.valor_total_aprovado || 0)}
             icon={DollarSign}
             iconColor="primary"
-            description="Total aprovado"
+            description="Valor aprovado"
             trend={{ value: 22.1, isPositive: true }}
           />
           <StatCard
             title="Pendentes"
             value={stats?.propostas_pendentes || 0}
             icon={FileText}
-            description="Propostas pendentes"
+            iconColor="muted"
+            description="Em aberto"
             trend={{ value: -1.5, isPositive: false }}
           />
         </div>
 
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Ações Rápidas</h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-2.5">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Ações Rápidas</h3>
+          <div className="flex gap-2.5 flex-wrap">
             <QuickActionCard
               title="Nova Proposta"
               icon={Plus}
@@ -205,6 +210,11 @@ export default function Dashboard() {
               title="Consultar Propostas"
               icon={Search}
               onClick={() => navigate('/propostas')}
+            />
+            <QuickActionCard
+              title="Calendário"
+              icon={CalendarIcon}
+              onClick={() => {}}
             />
           </div>
         </div>
@@ -256,16 +266,16 @@ export default function Dashboard() {
           </Card>
 
           <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Calendário</CardTitle>
-              <CardDescription>Acompanhe suas atividades</CardDescription>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Calendário</CardTitle>
+              <CardDescription className="text-xs">Atividades</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                className="rounded-md border"
+                className="rounded-md border-0 text-xs [&_.rdp-day]:text-xs [&_.rdp-day]:h-7 [&_.rdp-day]:w-7 [&_.rdp-caption]:text-xs"
               />
             </CardContent>
           </Card>
@@ -316,25 +326,13 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {recentPropostas.map((proposta) => (
                     <div
                       key={proposta.id}
-                      className="flex items-start justify-between gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
+                      className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/30 p-2 rounded-md transition-all border border-transparent hover:border-border/50"
                       onClick={() => navigate(`/propostas/${proposta.id}`)}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{proposta.cliente_nome}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {proposta.produto_nome} - {proposta.banco_nome}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          }).format(proposta.valor)}
-                        </p>
-                      </div>
                       <Badge
                         variant={
                           proposta.status === 'aprovada'
@@ -343,10 +341,26 @@ export default function Dashboard() {
                             ? 'destructive'
                             : 'secondary'
                         }
-                        className="text-xs"
+                        className="text-[9px] h-5 px-1.5 font-semibold flex-shrink-0 rounded-sm"
                       >
                         {proposta.status}
                       </Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold truncate leading-tight">{proposta.cliente_nome}</p>
+                        <p className="text-[10px] text-muted-foreground/70 truncate leading-tight">
+                          {proposta.produto_nome} • {proposta.banco_nome}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs font-bold">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            notation: 'compact',
+                            maximumFractionDigits: 1
+                          }).format(proposta.valor)}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
