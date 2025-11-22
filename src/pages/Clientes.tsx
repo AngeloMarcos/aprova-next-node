@@ -1,20 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DashboardLayout } from '@/components/DashboardLayout';
+import { CadastrosLayout } from '@/components/CadastrosLayout';
+import { CadastroEmptyState } from '@/components/CadastroEmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Search, Edit, Trash2, Users } from 'lucide-react';
+import { useClientes, Cliente } from '@/hooks/useClientes';
+import { ClienteFormModal } from '@/components/clientes/ClienteFormModal';
+import { DeleteAlertDialog } from '@/components/shared/DeleteAlertDialog';
+import { ClienteFormValues } from '@/lib/validations/clientes';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ClienteForm } from '@/components/clientes/ClienteForm';
-import { ClientesList } from '@/components/clientes/ClientesList';
-import { ClientesPagination } from '@/components/clientes/ClientesPagination';
-import { useClientes, Cliente, ClienteFormData } from '@/hooks/useClientes';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function Clientes() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,8 +27,8 @@ export default function Clientes() {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | undefined>();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const {
@@ -35,10 +40,16 @@ export default function Clientes() {
     deleteCliente,
   } = useClientes();
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    fetchClientes(value);
-  };
+  useEffect(() => {
+    if (searchTerm) {
+      const timeoutId = setTimeout(() => {
+        fetchClientes(searchTerm);
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    } else {
+      fetchClientes();
+    }
+  }, [searchTerm]);
 
   useEffect(() => {
     if (openNew === 'true') {
@@ -48,21 +59,23 @@ export default function Clientes() {
     }
   }, [openNew]);
 
-  const handleSubmit = async (data: ClienteFormData) => {
-    let success: boolean;
+  const handleOpenDialog = () => {
+    setEditingCliente(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async (data: ClienteFormValues) => {
+    const formData = {
+      nome: data.nome,
+      cpf: data.cpf,
+      email: data.email || undefined,
+    };
     
     if (editingCliente) {
-      success = await updateCliente(editingCliente.id, data);
+      return await updateCliente(editingCliente.id, formData);
     } else {
-      success = await createCliente(data);
+      return await createCliente(formData);
     }
-
-    if (success) {
-      setIsDialogOpen(false);
-      setEditingCliente(undefined);
-    }
-    
-    return success;
   };
 
   const handleEdit = (cliente: Cliente) => {
@@ -70,81 +83,151 @@ export default function Clientes() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteCliente(id);
+  const handleDeleteClick = (id: string) => {
+    setClienteToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
-  const handleOpenDialog = () => {
-    setEditingCliente(undefined);
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingCliente(undefined);
+  const handleDeleteConfirm = async () => {
+    if (clienteToDelete) {
+      await deleteCliente(clienteToDelete);
+      setDeleteDialogOpen(false);
+      setClienteToDelete(null);
+    }
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-            <p className="text-muted-foreground">
-              Gerencie os clientes da sua empresa
-            </p>
-          </div>
-          <Button onClick={handleOpenDialog}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Cliente
-          </Button>
+    <CadastrosLayout
+      titulo="Clientes"
+      descricao="Gerencie os clientes da sua empresa"
+      botaoNovoLabel="Novo Cliente"
+      onNovoClick={handleOpenDialog}
+      isLoading={loading && clientes.length === 0}
+    >
+      {/* Search */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome, CPF ou email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, CPF ou e-mail..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          {clientes.length > 0 && (
-            <div className="text-sm text-muted-foreground">
-              {clientes.length} {clientes.length === 1 ? 'cliente' : 'clientes'}
-            </div>
-          )}
-        </div>
-
-        <ClientesList
-          clientes={clientes}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          isLoading={loading}
-        />
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingCliente ? 'Editar Cliente' : 'Novo Cliente'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingCliente
-                  ? 'Atualize as informações do cliente'
-                  : 'Preencha os dados para cadastrar um novo cliente'}
-              </DialogDescription>
-            </DialogHeader>
-            <ClienteForm
-              cliente={editingCliente}
-              onSubmit={handleSubmit}
-              onCancel={handleCloseDialog}
-              isLoading={loading}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
-    </DashboardLayout>
+
+      {/* Loading Skeleton */}
+      {loading && clientes.length === 0 && (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && clientes.length === 0 && !searchTerm && (
+        <CadastroEmptyState
+          titulo="Nenhum cliente cadastrado"
+          descricao="Comece cadastrando seu primeiro cliente para gerenciar propostas."
+          botaoLabel="Cadastrar Primeiro Cliente"
+          onNovoClick={handleOpenDialog}
+          icone={<Users className="h-12 w-12" />}
+        />
+      )}
+
+      {/* No Results */}
+      {!loading && clientes.length === 0 && searchTerm && (
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">Nenhum cliente encontrado com "{searchTerm}"</p>
+        </Card>
+      )}
+
+      {/* Desktop Table */}
+      {clientes.length > 0 && (
+        <div className="hidden md:block">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>CPF</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="w-[100px]">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clientes.map((cliente) => (
+                  <TableRow key={cliente.id}>
+                    <TableCell className="font-medium">{cliente.nome}</TableCell>
+                    <TableCell>{cliente.cpf}</TableCell>
+                    <TableCell>{cliente.email || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => handleEdit(cliente)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(cliente.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
+      )}
+
+      {/* Mobile Cards */}
+      {clientes.length > 0 && (
+        <div className="md:hidden space-y-3">
+          {clientes.map((cliente) => (
+            <Card key={cliente.id} className="p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-semibold">{cliente.nome}</h3>
+                  <p className="text-sm text-muted-foreground">{cliente.cpf}</p>
+                  {cliente.email && (
+                    <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                  )}
+                </div>
+                <Badge variant="secondary">Ativo</Badge>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => handleEdit(cliente)} className="flex-1">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => handleDeleteClick(cliente.id)} className="flex-1">
+                  <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                  Excluir
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Modals */}
+      <ClienteFormModal
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleSubmit}
+        cliente={editingCliente}
+        isLoading={loading}
+      />
+
+      <DeleteAlertDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Cliente"
+        description="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+        isLoading={loading}
+      />
+    </CadastrosLayout>
   );
 }
