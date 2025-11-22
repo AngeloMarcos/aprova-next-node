@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { bancoSchema, BancoFormValues } from '@/lib/validations/bancos';
@@ -6,17 +7,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { Banco } from '@/hooks/useBancos';
+import { Banco, useBancos } from '@/hooks/useBancos';
 
 interface BancoFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: BancoFormValues) => Promise<boolean>;
   banco?: Banco;
-  isLoading: boolean;
+  onSuccess: () => void;
 }
 
-export function BancoFormModal({ open, onClose, onSubmit, banco, isLoading }: BancoFormModalProps) {
+export function BancoFormModal({ open, onClose, banco, onSuccess }: BancoFormModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { createBanco, updateBanco } = useBancos();
+  
   const form = useForm<BancoFormValues>({
     resolver: zodResolver(bancoSchema),
     defaultValues: {
@@ -28,10 +31,22 @@ export function BancoFormModal({ open, onClose, onSubmit, banco, isLoading }: Ba
   });
 
   const handleSubmit = async (data: BancoFormValues) => {
-    const success = await onSubmit(data);
+    setIsLoading(true);
+    const formData = {
+      nome: data.nome,
+      cnpj: data.cnpj || undefined,
+      email: data.email || undefined,
+      telefone: data.telefone || undefined,
+    };
+    
+    const success = banco 
+      ? await updateBanco(banco.id, formData)
+      : await createBanco(formData);
+    
+    setIsLoading(false);
     if (success) {
       form.reset();
-      onClose();
+      onSuccess();
     }
   };
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { promotoraSchema, PromotoraFormValues } from '@/lib/validations/promotoras';
@@ -7,19 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import { Promotora } from '@/hooks/usePromotoras';
+import { Promotora, usePromotoras } from '@/hooks/usePromotoras';
 import { useBancosSelect } from '@/hooks/useBancosSelect';
 
 interface PromotoraFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: PromotoraFormValues) => Promise<boolean>;
   promotora?: Promotora;
-  isLoading: boolean;
+  onSuccess: () => void;
 }
 
-export function PromotoraFormModal({ open, onClose, onSubmit, promotora, isLoading }: PromotoraFormModalProps) {
+export function PromotoraFormModal({ open, onClose, promotora, onSuccess }: PromotoraFormModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { bancos } = useBancosSelect();
+  const { createPromotora, updatePromotora } = usePromotoras();
   
   const form = useForm<PromotoraFormValues>({
     resolver: zodResolver(promotoraSchema),
@@ -34,10 +36,24 @@ export function PromotoraFormModal({ open, onClose, onSubmit, promotora, isLoadi
   });
 
   const handleSubmit = async (data: PromotoraFormValues) => {
-    const success = await onSubmit(data);
+    setIsLoading(true);
+    const formData = {
+      nome: data.nome,
+      banco_id: data.banco_id || undefined,
+      telefone: data.telefone || undefined,
+      email: data.email || undefined,
+      contato: data.contato || undefined,
+      comissao_padrao: data.comissao_padrao ? parseFloat(data.comissao_padrao) : undefined,
+    };
+    
+    const success = promotora
+      ? await updatePromotora(promotora.id, formData)
+      : await createPromotora(formData);
+    
+    setIsLoading(false);
     if (success) {
       form.reset();
-      onClose();
+      onSuccess();
     }
   };
 
