@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { produtoSchema, ProdutoFormValues } from '@/lib/validations/produtos';
@@ -7,19 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import { Produto } from '@/hooks/useProdutos';
+import { Produto, useProdutos } from '@/hooks/useProdutos';
 import { useBancosSelect } from '@/hooks/useBancosSelect';
 
 interface ProdutoFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: ProdutoFormValues) => Promise<boolean>;
   produto?: Produto;
-  isLoading: boolean;
+  onSuccess: () => void;
 }
 
-export function ProdutoFormModal({ open, onClose, onSubmit, produto, isLoading }: ProdutoFormModalProps) {
+export function ProdutoFormModal({ open, onClose, produto, onSuccess }: ProdutoFormModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { bancos } = useBancosSelect();
+  const { createProduto, updateProduto } = useProdutos();
   
   const form = useForm<ProdutoFormValues>({
     resolver: zodResolver(produtoSchema),
@@ -33,10 +35,23 @@ export function ProdutoFormModal({ open, onClose, onSubmit, produto, isLoading }
   });
 
   const handleSubmit = async (data: ProdutoFormValues) => {
-    const success = await onSubmit(data);
+    setIsLoading(true);
+    const formData = {
+      nome: data.nome,
+      tipo_credito: data.tipo_credito,
+      taxa_juros: data.taxa_juros ? parseFloat(data.taxa_juros) : undefined,
+      status: data.status,
+      banco_id: data.banco_id || undefined,
+    };
+    
+    const success = produto
+      ? await updateProduto(produto.id, formData)
+      : await createProduto(formData);
+    
+    setIsLoading(false);
     if (success) {
       form.reset();
-      onClose();
+      onSuccess();
     }
   };
 

@@ -10,23 +10,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pencil, Trash2, Building2 } from 'lucide-react';
-import { Banco } from '@/hooks/useBancos';
+import { Pencil, Trash2, UserCircle } from 'lucide-react';
+import { Promotora } from '@/hooks/usePromotoras';
 import { format } from 'date-fns';
 
-interface BancosListProps {
-  bancos: Banco[];
-  onEdit: (banco: Banco) => void;
+interface PromotorasListProps {
+  promotoras: Promotora[];
+  onEdit: (promotora: Promotora) => void;
   onDelete: (id: string) => void;
   isLoading?: boolean;
 }
 
-export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListProps) {
-  const formatCNPJ = (cnpj: string | null) => {
-    if (!cnpj) return '-';
-    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  };
-
+export function PromotorasList({ promotoras, onEdit, onDelete, isLoading }: PromotorasListProps) {
   if (isLoading) {
     return (
       <>
@@ -36,9 +31,10 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>CNPJ</TableHead>
+                <TableHead>Banco</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
+                <TableHead>Comissão</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -47,9 +43,10 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
               {[1, 2, 3].map((i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                 </TableRow>
@@ -75,7 +72,7 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
     );
   }
 
-  if (bancos.length === 0) {
+  if (promotoras.length === 0) {
     return null;
   }
 
@@ -87,28 +84,32 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>CNPJ</TableHead>
+              <TableHead>Banco</TableHead>
               <TableHead>E-mail</TableHead>
               <TableHead>Telefone</TableHead>
+              <TableHead>Comissão</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bancos.map((banco) => (
-              <TableRow key={banco.id}>
+            {promotoras.map((promotora) => (
+              <TableRow key={promotora.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                    {banco.nome}
+                    <UserCircle className="h-4 w-4 text-muted-foreground" />
+                    {promotora.nome}
                   </div>
                 </TableCell>
-                <TableCell>{formatCNPJ(banco.cnpj)}</TableCell>
-                <TableCell>{banco.email || '-'}</TableCell>
-                <TableCell>{banco.telefone || '-'}</TableCell>
+                <TableCell>{promotora.bancos?.nome || '-'}</TableCell>
+                <TableCell>{promotora.email || '-'}</TableCell>
+                <TableCell>{promotora.telefone || '-'}</TableCell>
                 <TableCell>
-                  <Badge variant={banco.ativo ? 'default' : 'secondary'}>
-                    {banco.ativo ? 'Ativo' : 'Inativo'}
+                  {promotora.comissao_padrao ? `${promotora.comissao_padrao}%` : '-'}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={promotora.ativo ? 'default' : 'secondary'}>
+                    {promotora.ativo ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -116,14 +117,14 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onEdit(banco)}
+                      onClick={() => onEdit(promotora)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onDelete(banco.id)}
+                      onClick={() => onDelete(promotora.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -137,42 +138,46 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
 
       {/* Mobile cards */}
       <div className="md:hidden space-y-4">
-        {bancos.map((banco) => (
-          <Card key={banco.id}>
+        {promotoras.map((promotora) => (
+          <Card key={promotora.id}>
             <CardContent className="p-4">
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-muted-foreground" />
-                    <h3 className="font-semibold">{banco.nome}</h3>
+                    <UserCircle className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="font-semibold">{promotora.nome}</h3>
                   </div>
-                  <Badge variant={banco.ativo ? 'default' : 'secondary'}>
-                    {banco.ativo ? 'Ativo' : 'Inativo'}
+                  <Badge variant={promotora.ativo ? 'default' : 'secondary'}>
+                    {promotora.ativo ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </div>
                 
                 <div className="space-y-1 text-sm">
-                  {banco.cnpj && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">CNPJ:</span>
-                      <span>{formatCNPJ(banco.cnpj)}</span>
-                    </div>
-                  )}
-                  {banco.email && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Banco:</span>
+                    <span>{promotora.bancos?.nome || '-'}</span>
+                  </div>
+                  {promotora.email && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">E-mail:</span>
-                      <span className="truncate ml-2">{banco.email}</span>
+                      <span className="truncate ml-2">{promotora.email}</span>
                     </div>
                   )}
-                  {banco.telefone && (
+                  {promotora.telefone && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Telefone:</span>
-                      <span>{banco.telefone}</span>
+                      <span>{promotora.telefone}</span>
+                    </div>
+                  )}
+                  {promotora.comissao_padrao && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Comissão:</span>
+                      <span>{promotora.comissao_padrao}%</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Cadastrado:</span>
-                    <span>{format(new Date(banco.created_at), 'dd/MM/yyyy')}</span>
+                    <span>{format(new Date(promotora.created_at), 'dd/MM/yyyy')}</span>
                   </div>
                 </div>
 
@@ -181,7 +186,7 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => onEdit(banco)}
+                    onClick={() => onEdit(promotora)}
                   >
                     <Pencil className="h-4 w-4 mr-2" />
                     Editar
@@ -190,7 +195,7 @@ export function BancosList({ bancos, onEdit, onDelete, isLoading }: BancosListPr
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => onDelete(banco.id)}
+                    onClick={() => onDelete(promotora.id)}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Excluir

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { DashboardLayout } from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { CadastrosLayout } from '@/components/CadastrosLayout';
+import { CadastroEmptyState } from '@/components/CadastroEmptyState';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,174 +9,160 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Plus, Search, Filter } from 'lucide-react';
-import { useProdutos, Produto, ProdutoFormData, ProdutoFilters } from '@/hooks/useProdutos';
+import { Search, Package } from 'lucide-react';
+import { useProdutos, Produto } from '@/hooks/useProdutos';
 import { useBancosSelect } from '@/hooks/useBancosSelect';
-import { ProdutoForm } from '@/components/produtos/ProdutoForm';
+import { ProdutoFormModal } from '@/components/produtos/ProdutoFormModal';
 import { ProdutosList } from '@/components/produtos/ProdutosList';
-import { ProdutosPagination } from '@/components/produtos/ProdutosPagination';
+import { DeleteAlertDialog } from '@/components/shared/DeleteAlertDialog';
 
 export default function Produtos() {
-  const {
-    loading,
-    fetchProdutos,
-    createProduto,
-    updateProduto,
+  const { 
+    loading, 
+    fetchProdutos, 
     deleteProduto,
+    updateProdutoStatus 
   } = useProdutos();
-
   const { bancos } = useBancosSelect();
-
+  
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [bancoFilter, setBancoFilter] = useState<string>('all');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [bancoFilter, setBancoFilter] = useState<string>('');
+  const [showModal, setShowModal] = useState(false);
   const [editingProduto, setEditingProduto] = useState<Produto | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [produtoToDelete, setProdutoToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadProdutos = async () => {
-      const result = await fetchProdutos(1, 100, {
-        search: searchTerm || undefined,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        banco_id: bancoFilter !== 'all' ? bancoFilter : undefined,
-      });
-      setProdutos(result.data);
-    };
+  const loadProdutos = async () => {
+    const result = await fetchProdutos(1, 50, {
+      search: searchTerm || undefined,
+      status: statusFilter || undefined,
+      banco_id: bancoFilter || undefined,
+    });
+    setProdutos(result.data);
+  };
+
+  const handleSearch = () => {
     loadProdutos();
-  }, [searchTerm, statusFilter, bancoFilter]);
-
-  const handleCreate = () => {
-    setEditingProduto(undefined);
-    setIsDialogOpen(true);
   };
 
   const handleEdit = (produto: Produto) => {
     setEditingProduto(produto);
-    setIsDialogOpen(true);
+    setShowModal(true);
   };
 
-  const handleSubmit = async (data: ProdutoFormData) => {
-    let success = false;
+  const handleDelete = (id: string) => {
+    setProdutoToDelete(id);
+    setDeleteDialogOpen(true);
+  };
 
-    if (editingProduto) {
-      success = await updateProduto(editingProduto.id, data);
-    } else {
-      success = await createProduto(data);
-    }
-
-    if (success) {
-      setIsDialogOpen(false);
-      setEditingProduto(undefined);
+  const confirmDelete = async () => {
+    if (produtoToDelete) {
+      const success = await deleteProduto(produtoToDelete);
+      if (success) {
+        setDeleteDialogOpen(false);
+        setProdutoToDelete(null);
+        handleSearch();
+      }
     }
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteProduto(id);
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    await updateProdutoStatus(id, newStatus);
+    handleSearch();
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingProduto(undefined);
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Gestão de Produtos</h2>
-            <p className="text-muted-foreground">
-              Gerencie os produtos financeiros do sistema
-            </p>
-          </div>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Produto
-          </Button>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome ou tipo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2 items-center">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Todos os status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="ativo">Ativo</SelectItem>
-                <SelectItem value="inativo">Inativo</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={bancoFilter} onValueChange={setBancoFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Todos os bancos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os bancos</SelectItem>
-                {bancos.map((banco) => (
-                  <SelectItem key={banco.value} value={banco.value}>
-                    {banco.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {(searchTerm || statusFilter !== 'all' || bancoFilter !== 'all') && (
-              <Button variant="outline" size="sm" onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('all');
-                setBancoFilter('all');
-              }}>
-                Limpar Filtros
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <ProdutosList
-          produtos={produtos}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onStatusChange={() => {}}
-        />
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingProduto ? 'Editar Produto' : 'Novo Produto'}
-              </DialogTitle>
-              <DialogDescription>
-                Preencha os dados do produto abaixo. Campos com * são obrigatórios.
-              </DialogDescription>
-            </DialogHeader>
-            <ProdutoForm
-              produto={editingProduto}
-              onSubmit={handleSubmit}
-              onCancel={() => setIsDialogOpen(false)}
-              loading={loading}
+    <CadastrosLayout
+      titulo="Produtos"
+      descricao="Gerencie os produtos financeiros oferecidos"
+      botaoNovoLabel="Novo Produto"
+      onNovoClick={() => setShowModal(true)}
+      isLoading={loading && produtos.length === 0}
+    >
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou tipo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-9"
             />
-          </DialogContent>
-        </Dialog>
+          </div>
+          
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="ativo">Ativo</SelectItem>
+              <SelectItem value="inativo">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={bancoFilter} onValueChange={setBancoFilter}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Banco" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {bancos.map((banco) => (
+                <SelectItem key={banco.value} value={banco.value}>
+                  {banco.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {produtos.length === 0 && !loading ? (
+          <CadastroEmptyState
+            titulo="Nenhum produto cadastrado"
+            descricao="Comece cadastrando seu primeiro produto financeiro para oferecer aos clientes."
+            botaoLabel="Cadastrar Primeiro Produto"
+            onNovoClick={() => setShowModal(true)}
+            icone={<Package className="h-12 w-12" />}
+          />
+        ) : (
+          <ProdutosList
+            produtos={produtos}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+            isLoading={loading}
+          />
+        )}
       </div>
-    </DashboardLayout>
+
+      <ProdutoFormModal
+        open={showModal}
+        onClose={handleCloseModal}
+        produto={editingProduto}
+        onSuccess={() => {
+          handleCloseModal();
+          handleSearch();
+        }}
+      />
+
+      <DeleteAlertDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este produto? Se houver propostas vinculadas, o produto será apenas desativado."
+        isLoading={loading}
+      />
+    </CadastrosLayout>
   );
 }
