@@ -32,12 +32,20 @@ const App = () => (
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/clientes" element={<Clientes />} />
+            
+            {/* Rotas de Cadastros */}
+            <Route path="/cadastros/clientes" element={<Clientes />} />
+            <Route path="/cadastros/bancos" element={<Bancos />} />
+            <Route path="/cadastros/produtos" element={<Produtos />} />
+            
+            {/* Rotas antigas mantidas para compatibilidade */}
+            <Route path="/clientes" element={<Navigate to="/cadastros/clientes" replace />} />
+            <Route path="/bancos" element={<Navigate to="/cadastros/bancos" replace />} />
+            <Route path="/produtos" element={<Navigate to="/cadastros/produtos" replace />} />
+            
             <Route path="/propostas" element={<Propostas />} />
             <Route path="/propostas/:id/detalhes" element={<PropostaDetalhes />} />
             <Route path="/propostas/:id" element={<PropostaDetail />} />
-            <Route path="/bancos" element={<Bancos />} />
-            <Route path="/produtos" element={<Produtos />} />
             <Route path="/users" element={<Users />} />
             <Route path="/activity-log" element={<ActivityLog />} />
             <Route path="/renovacoes" element={<Renovacoes />} />

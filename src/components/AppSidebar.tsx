@@ -30,9 +30,10 @@ const menuItems = [
   { title: "Log de Atividades", url: "/activity-log", icon: Activity, managerAccess: true },
 ];
 
-const financialItems = [
-  { title: "Bancos", url: "/bancos", icon: Building2 },
-  { title: "Produtos", url: "/produtos", icon: Package },
+const cadastrosItems = [
+  { title: "Clientes", url: "/cadastros/clientes", icon: Users },
+  { title: "Bancos", url: "/cadastros/bancos", icon: Building2 },
+  { title: "Produtos", url: "/cadastros/produtos", icon: Package },
 ];
 
 export function AppSidebar() {
@@ -128,10 +129,10 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel>FINANCEIRO</SidebarGroupLabel>}
+          {!collapsed && <SidebarGroupLabel>CADASTROS</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
-              {financialItems.map((item) => (
+              {cadastrosItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
