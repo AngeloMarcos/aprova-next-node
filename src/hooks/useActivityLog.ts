@@ -40,9 +40,22 @@ export function useActivityLog() {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
+      // 🔒 CRITICAL: Get current user's empresa_id for multi-tenant isolation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.empresa_id) throw new Error('Empresa não encontrada');
+
       let query = supabase
         .from('activity_logs')
         .select('*', { count: 'exact' })
+        .eq('empresa_id', profile.empresa_id) // 🔒 CRITICAL: Filter by empresa_id
         .order('timestamp', { ascending: false });
 
       // Apply filters
@@ -81,9 +94,22 @@ export function useActivityLog() {
 
   const fetchUsers = async () => {
     try {
+      // 🔒 CRITICAL: Get current user's empresa_id for multi-tenant isolation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.empresa_id) throw new Error('Empresa não encontrada');
+
       const { data, error } = await supabase
         .from('activity_logs')
         .select('user_id, user_name, user_email')
+        .eq('empresa_id', profile.empresa_id) // 🔒 CRITICAL: Filter by empresa_id
         .not('user_id', 'is', null)
         .order('user_name');
 
