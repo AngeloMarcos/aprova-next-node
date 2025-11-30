@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
+import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Propostas from "./pages/Propostas";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
             
             {/* Rotas de Cadastros */}

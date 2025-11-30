@@ -6,6 +6,7 @@ import { QuickActionCard } from "@/components/QuickActionCard";
 import { Users, FileText, CheckCircle, DollarSign, FileSearch, TrendingUp, Plus, UserPlus, Search, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -28,10 +29,18 @@ interface DashboardKPIs {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { loading: onboardingLoading, onboardingCompleted } = useOnboarding();
   const [stats, setStats] = useState<DashboardKPIs | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const { trends, statusBreakdown, recentPropostas, loading: dashboardLoading } = useDashboardData();
+
+  // Verifica se o onboarding foi completado e redireciona se necessário
+  useEffect(() => {
+    if (!onboardingLoading && !onboardingCompleted) {
+      navigate("/onboarding");
+    }
+  }, [onboardingLoading, onboardingCompleted, navigate]);
 
   const loadStats = async () => {
     try {
