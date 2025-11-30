@@ -11,6 +11,7 @@ import { PropostaDadosTab } from '@/components/propostas/PropostaDadosTab';
 import { PropostaAtividadesTab } from '@/components/propostas/PropostaAtividadesTab';
 import { PropostaAnexos } from '@/components/propostas/PropostaAnexos';
 import { PropostaHistoricoTab } from '@/components/propostas/PropostaHistoricoTab';
+import { PropostaComissoesTab } from '@/components/propostas/PropostaComissoesTab';
 
 function LoadingPageSkeleton() {
   return (
@@ -56,7 +57,7 @@ export default function PropostaDetalhes() {
         <PropostaHeader proposta={proposta} onUpdate={refetch} />
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-0 bg-muted/50 p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-0 bg-muted/50 p-1">
             <TabsTrigger value="dados" className="text-xs sm:text-sm min-h-[44px]">
               Dados
             </TabsTrigger>
@@ -65,6 +66,9 @@ export default function PropostaDetalhes() {
             </TabsTrigger>
             <TabsTrigger value="anexos" className="text-xs sm:text-sm min-h-[44px]">
               Anexos
+            </TabsTrigger>
+            <TabsTrigger value="comissoes" className="text-xs sm:text-sm min-h-[44px]">
+              Comissões
             </TabsTrigger>
             <TabsTrigger value="historico" className="text-xs sm:text-sm min-h-[44px]">
               Histórico
@@ -81,6 +85,10 @@ export default function PropostaDetalhes() {
 
           <TabsContent value="anexos" className="mt-6">
             <PropostaAnexos propostaId={proposta.id} />
+          </TabsContent>
+
+          <TabsContent value="comissoes" className="mt-6">
+            <PropostaComissoesTab propostaId={proposta.id} />
           </TabsContent>
 
           <TabsContent value="historico" className="mt-6">
