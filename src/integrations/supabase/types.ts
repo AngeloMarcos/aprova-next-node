@@ -73,6 +73,92 @@ export type Database = {
           },
         ]
       }
+      agent_prompt_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          prompt_final: string
+          prompt_id: string | null
+          questions_responses: Json | null
+          version: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          prompt_final: string
+          prompt_id?: string | null
+          questions_responses?: Json | null
+          version: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          prompt_final?: string
+          prompt_id?: string | null
+          questions_responses?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_prompt_history_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_prompts: {
+        Row: {
+          api_calls_count: number | null
+          company_name: string
+          created_at: string | null
+          id: string
+          last_used_at: string | null
+          metadata: Json | null
+          prompt_final: string
+          protocol: string | null
+          questions_responses: Json | null
+          status: string | null
+          updated_at: string | null
+          used_in_conversations: number | null
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          api_calls_count?: number | null
+          company_name: string
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          prompt_final: string
+          protocol?: string | null
+          questions_responses?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          used_in_conversations?: number | null
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          api_calls_count?: number | null
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          prompt_final?: string
+          protocol?: string | null
+          questions_responses?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          used_in_conversations?: number | null
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: []
+      }
       bancos: {
         Row: {
           ativo: boolean | null
@@ -113,6 +199,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      campaign_queue: {
+        Row: {
+          campaign_id: string | null
+          contact_name: string | null
+          contact_phone: string
+          created_at: string | null
+          id: string
+          message: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          contact_name?: string | null
+          contact_phone: string
+          created_at?: string | null
+          id?: string
+          message: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          contact_name?: string | null
+          contact_phone?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          name: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       clientes: {
         Row: {
@@ -394,6 +548,207 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          bairro: string | null
+          capitalsocial: number | null
+          cep: string | null
+          cnpj: string | null
+          complemento: string | null
+          created_at: string | null
+          dataabertura: string | null
+          email: string | null
+          email_validated: boolean | null
+          error_message: string | null
+          estado: string | null
+          id: number
+          last_retry_at: string | null
+          logradouro: string | null
+          municipio: string | null
+          nomefantasia: string | null
+          numero: string | null
+          porteempresa: string | null
+          razaosocial: string | null
+          retry_count: number | null
+          sent_at: string | null
+          situacao: string | null
+          status: string | null
+          telefones: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          capitalsocial?: number | null
+          cep?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          created_at?: string | null
+          dataabertura?: string | null
+          email?: string | null
+          email_validated?: boolean | null
+          error_message?: string | null
+          estado?: string | null
+          id?: number
+          last_retry_at?: string | null
+          logradouro?: string | null
+          municipio?: string | null
+          nomefantasia?: string | null
+          numero?: string | null
+          porteempresa?: string | null
+          razaosocial?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          situacao?: string | null
+          status?: string | null
+          telefones?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          capitalsocial?: number | null
+          cep?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          created_at?: string | null
+          dataabertura?: string | null
+          email?: string | null
+          email_validated?: boolean | null
+          error_message?: string | null
+          estado?: string | null
+          id?: number
+          last_retry_at?: string | null
+          logradouro?: string | null
+          municipio?: string | null
+          nomefantasia?: string | null
+          numero?: string | null
+          porteempresa?: string | null
+          razaosocial?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          situacao?: string | null
+          status?: string | null
+          telefones?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      leads_import: {
+        Row: {
+          atividades_principal: string | null
+          atividades_secundarias: string | null
+          bairro: string | null
+          capital_social: string | null
+          cep: string | null
+          cnpj: string | null
+          complemento: string | null
+          data_abertura: string | null
+          data_exclusao_simples: string | null
+          data_opcao_simples: string | null
+          data_situacao_cadastral: string | null
+          data_situacao_especial: string | null
+          descricao_tipo_logradouro: string | null
+          email: string | null
+          ente_feretativo_responsavel: string | null
+          estado: string | null
+          link_test_whatsapp: string | null
+          link_whatsapp_cnpjbiz: string | null
+          logradouro: string | null
+          motivo_situacao_cadastral: string | null
+          municipio: string | null
+          natureza_juridica: string | null
+          nome_fantasia: string | null
+          numero: string | null
+          opcao_pelo_mei: string | null
+          opcao_simples: string | null
+          porte_empresa: string | null
+          razao_social: string | null
+          regime_tributario: string | null
+          situacao: string | null
+          situacao_especial: string | null
+          socios: string | null
+          telefones: string | null
+          telefones_tipo: string | null
+          tipo: string | null
+        }
+        Insert: {
+          atividades_principal?: string | null
+          atividades_secundarias?: string | null
+          bairro?: string | null
+          capital_social?: string | null
+          cep?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          data_abertura?: string | null
+          data_exclusao_simples?: string | null
+          data_opcao_simples?: string | null
+          data_situacao_cadastral?: string | null
+          data_situacao_especial?: string | null
+          descricao_tipo_logradouro?: string | null
+          email?: string | null
+          ente_feretativo_responsavel?: string | null
+          estado?: string | null
+          link_test_whatsapp?: string | null
+          link_whatsapp_cnpjbiz?: string | null
+          logradouro?: string | null
+          motivo_situacao_cadastral?: string | null
+          municipio?: string | null
+          natureza_juridica?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          opcao_pelo_mei?: string | null
+          opcao_simples?: string | null
+          porte_empresa?: string | null
+          razao_social?: string | null
+          regime_tributario?: string | null
+          situacao?: string | null
+          situacao_especial?: string | null
+          socios?: string | null
+          telefones?: string | null
+          telefones_tipo?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          atividades_principal?: string | null
+          atividades_secundarias?: string | null
+          bairro?: string | null
+          capital_social?: string | null
+          cep?: string | null
+          cnpj?: string | null
+          complemento?: string | null
+          data_abertura?: string | null
+          data_exclusao_simples?: string | null
+          data_opcao_simples?: string | null
+          data_situacao_cadastral?: string | null
+          data_situacao_especial?: string | null
+          descricao_tipo_logradouro?: string | null
+          email?: string | null
+          ente_feretativo_responsavel?: string | null
+          estado?: string | null
+          link_test_whatsapp?: string | null
+          link_whatsapp_cnpjbiz?: string | null
+          logradouro?: string | null
+          motivo_situacao_cadastral?: string | null
+          municipio?: string | null
+          natureza_juridica?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          opcao_pelo_mei?: string | null
+          opcao_simples?: string | null
+          porte_empresa?: string | null
+          razao_social?: string | null
+          regime_tributario?: string | null
+          situacao?: string | null
+          situacao_especial?: string | null
+          socios?: string | null
+          telefones?: string | null
+          telefones_tipo?: string | null
+          tipo?: string | null
+        }
+        Relationships: []
+      }
       mensagens: {
         Row: {
           conversa_id: string
@@ -462,6 +817,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      midias_whatsapp: {
+        Row: {
+          acao: string
+          caminho_storage: string
+          created_at: string | null
+          descricao: string | null
+          id: number
+          linha: string | null
+          marcador: string | null
+          nome_arquivo: string | null
+          ordem: number | null
+          status_arquivo: string | null
+          url_publica: string | null
+          variacao: string | null
+        }
+        Insert: {
+          acao: string
+          caminho_storage: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: number
+          linha?: string | null
+          marcador?: string | null
+          nome_arquivo?: string | null
+          ordem?: number | null
+          status_arquivo?: string | null
+          url_publica?: string | null
+          variacao?: string | null
+        }
+        Update: {
+          acao?: string
+          caminho_storage?: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: number
+          linha?: string | null
+          marcador?: string | null
+          nome_arquivo?: string | null
+          ordem?: number | null
+          status_arquivo?: string | null
+          url_publica?: string | null
+          variacao?: string | null
+        }
+        Relationships: []
       }
       produtos: {
         Row: {
